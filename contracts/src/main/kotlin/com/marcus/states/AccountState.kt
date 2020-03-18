@@ -7,6 +7,7 @@ import net.corda.core.contracts.LinearState
 import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.identity.AbstractParty
 import net.corda.core.serialization.CordaSerializable
+import java.math.BigDecimal
 import java.util.*
 
 @BelongsToContract(AccountContract::class)
