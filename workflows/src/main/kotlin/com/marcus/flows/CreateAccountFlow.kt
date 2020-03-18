@@ -33,6 +33,4 @@ class CreateAccountFlow(private val currencyCode: String) : BaseFlow<AccountStat
         val finalisedTransaction = updateLedger(signInitialTransaction)
         return findState(finalisedTransaction)
     }
-
-
 }
