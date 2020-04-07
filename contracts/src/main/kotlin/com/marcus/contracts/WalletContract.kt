@@ -5,7 +5,7 @@ import net.corda.core.transactions.LedgerTransaction
 class WalletContract : BaseContract() {
     companion object {
         @JvmStatic
-        val WALLET_CONTRACT_ID = WalletContract::class.qualifiedName!!
+        val CONTRACT_ID = WalletContract::class.qualifiedName!!
     }
 
     class CreateWalletCommand : MyCommand() {

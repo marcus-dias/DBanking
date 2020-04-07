@@ -5,6 +5,7 @@ import com.marcus.contracts.BaseContract
 import com.marcus.contracts.WalletContract
 import com.marcus.states.WalletState
 import com.marcus.states.WalletStatus
+import com.marcus.utils.findState
 import net.corda.core.contracts.Command
 import java.util.*
 
@@ -15,7 +16,7 @@ class CreateWalletFlow : BaseFlow<WalletState>() {
         val state = WalletState(ourIdentity, WalletStatus.ACTIVE, Date())
         val transactionBuilder = buildTransaction()
 
-        transactionBuilder.addOutputState(state, WalletContract.WALLET_CONTRACT_ID)
+        transactionBuilder.addOutputState(state, WalletContract.CONTRACT_ID)
         val signInitialTransaction = signTransaction(transactionBuilder)
 
         signInitialTransaction.verifyRequiredSignatures()
@@ -25,6 +26,8 @@ class CreateWalletFlow : BaseFlow<WalletState>() {
     }
 
     override fun createCommands(): List<Command<out BaseContract.MyCommand>> {
-        return listOf(Command(WalletContract.CreateWalletCommand(), listOf(ourIdentity.owningKey)))
+        return listOf(
+                Command(WalletContract.CreateWalletCommand(), listOf(ourIdentity.owningKey))
+        )
     }
 }
