@@ -11,12 +11,12 @@ import java.util.*
 
 @BelongsToContract(MovementContract::class)
 data class MovementState(
-        val originAccountId: UniqueIdentifier,
-        val destinationAccountId: UniqueIdentifier,
+        val myAccountId: UniqueIdentifier,
+        val counterAccountId: UniqueIdentifier,
         val amount: Amount<Currency>,
         val executionDate: Date,
         val status: MovementType,
-        override val participants: List<AbstractParty> = listOf()) : ContractState
+        override val participants: List<AbstractParty>) : ContractState
 
 @CordaSerializable
 enum class MovementType {

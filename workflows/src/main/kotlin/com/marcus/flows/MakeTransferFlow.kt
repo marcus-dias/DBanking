@@ -2,26 +2,21 @@ package com.marcus.flows
 
 import co.paralleluniverse.fibers.Suspendable
 import com.marcus.contracts.AccountContract
-import com.marcus.contracts.BaseContract
+import com.marcus.contracts.MovementContract
 import com.marcus.contracts.TransferContract
-import com.marcus.states.AccountState
-import com.marcus.states.TransferState
-import com.marcus.states.TransferStatus
-import com.marcus.states.WalletState
+import com.marcus.states.*
 import com.marcus.utils.findAccountForCurrency
 import com.marcus.utils.findLedgerState
 import com.marcus.utils.findState
 import com.marcus.utils.getContractState
 import net.corda.core.contracts.Amount
-import net.corda.core.contracts.Command
-import net.corda.core.contracts.StateAndRef
-import net.corda.core.flows.FlowLogic
-import net.corda.core.flows.FlowSession
-import net.corda.core.flows.InitiatedBy
+import net.corda.core.flows.*
 import net.corda.core.identity.Party
 import net.corda.core.utilities.unwrap
 import java.util.*
 
+@InitiatingFlow
+@StartableByRPC
 class MakeTransferFlow(
         private val destination: Party,
         private val amount: Amount<Currency>
@@ -34,9 +29,10 @@ class MakeTransferFlow(
         val originAccountStateAndRef = findLedgerState<AccountState>()
 
         val counterPartySessionFlow = initiateFlow(destination)
-        val (destinationWalletStateAndRef, destinationAccountStateAndRef) = counterPartySessionFlow
-                .sendAndReceive<Pair<StateAndRef<WalletState>, StateAndRef<AccountState>>>(amount.token)
-                .unwrap { it }
+        counterPartySessionFlow.send(amount.token)
+
+        val destinationWalletStateAndRef = subFlow(ReceiveStateAndRefFlow<WalletState>(counterPartySessionFlow)).single()
+        val destinationAccountStateAndRef = subFlow(ReceiveStateAndRefFlow<AccountState>(counterPartySessionFlow)).single()
 
         val originAccountState = originAccountStateAndRef.getContractState()
         val destinationAccountState = destinationAccountStateAndRef.getContractState()
@@ -53,7 +49,28 @@ class MakeTransferFlow(
                 amount,
                 listOf(ourIdentity, destination)
         )
-        val buildTransaction = buildTransaction().apply {
+        val originMovementState = MovementState(
+                originAccountState.linearId,
+                destinationAccountState.linearId,
+                amount,
+                Date(),
+                MovementType.DEBIT,
+                listOf(ourIdentity)
+        )
+        val destinationMovementState = MovementState(
+                destinationAccountState.linearId,
+                originAccountState.linearId,
+                amount,
+                Date(),
+                MovementType.CREDIT,
+                listOf(destination)
+        )
+        // build transaction
+        val buildTransaction = buildTransaction(
+                TransferContract.CreateTransferCommand() to listOf(ourIdentity.owningKey, destination.owningKey),
+                AccountContract.UpdateAccountCommand() to listOf(ourIdentity.owningKey, destination.owningKey),
+                MovementContract.CreateMovementCommand() to listOf(ourIdentity.owningKey, destination.owningKey)
+        ).apply {
             // add inputs
             addInputState(originWalletStateAndRef)
             addInputState(originAccountStateAndRef)
@@ -63,15 +80,12 @@ class MakeTransferFlow(
             addOutputState(newOriginAccountState, AccountContract.CONTRACT_ID)
             addOutputState(newDestinationAccountState, AccountContract.CONTRACT_ID)
             addOutputState(transferState, TransferContract.CONTRACT_ID)
+            addOutputState(originMovementState, MovementContract.CONTRACT_ID)
+            addOutputState(destinationMovementState, MovementContract.CONTRACT_ID)
         }
 
-        val finalisedTransaction = collectSignaturesAndUpdateLedger(buildTransaction, counterPartySessionFlow)
-
+        val finalisedTransaction = collectSignaturesAndUpdateLedger(buildTransaction, listOf(counterPartySessionFlow))
         return findState(finalisedTransaction)
-    }
-
-    override fun createCommands(): List<Command<out BaseContract.MyCommand>> {
-        return emptyList()
     }
 }
 
@@ -82,6 +96,7 @@ class MakeTransferFlowResponder(private val launcherSession: FlowSession) : Flow
         val currency = launcherSession.receive<Currency>().unwrap { it }
         val walletStateAndRef = findLedgerState<WalletState>()
         val accountStateAndRef = findAccountForCurrency(currency)
-        launcherSession.send(Pair(walletStateAndRef, accountStateAndRef))
+        subFlow(SendStateAndRefFlow(launcherSession, listOf(walletStateAndRef)))
+        subFlow(SendStateAndRefFlow(launcherSession, listOf(accountStateAndRef)))
     }
 }

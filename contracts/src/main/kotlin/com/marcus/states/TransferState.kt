@@ -17,7 +17,7 @@ class TransferState(
         val creationDate: Date,
         val executionDate: Date,
         val amount: Amount<Currency>,
-        override val participants: List<AbstractParty> = listOf(),
+        override val participants: List<AbstractParty>,
         override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : LinearState
 

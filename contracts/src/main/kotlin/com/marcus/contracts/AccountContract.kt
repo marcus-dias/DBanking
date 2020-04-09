@@ -18,4 +18,15 @@ class AccountContract : BaseContract() {
 
         }
     }
+
+    class UpdateAccountCommand : MyCommand() {
+
+        override fun verifyContractSpecifics(tx: LedgerTransaction) {
+
+        }
+
+        override fun verifyContractShape(tx: LedgerTransaction) {
+
+        }
+    }
 }

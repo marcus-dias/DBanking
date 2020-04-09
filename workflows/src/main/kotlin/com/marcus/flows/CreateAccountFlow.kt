@@ -10,33 +10,30 @@ import com.marcus.utils.findState
 import com.marcus.utils.getContractState
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.Command
+import net.corda.core.flows.InitiatingFlow
+import net.corda.core.flows.StartableByRPC
 import java.math.BigDecimal
 import java.util.*
 
-
+@InitiatingFlow
+@StartableByRPC
 class CreateAccountFlow(private val currencyCode: String) : BaseFlow<AccountState>() {
 
     @Suspendable
     override fun call(): AccountState {
         val walletStateAndRef = findLedgerState<WalletState>()
-
         val amount = Amount.fromDecimal(BigDecimal.ZERO, Currency.getInstance(currencyCode))
-        val state = AccountState(walletStateAndRef.getContractState().linearId, amount, Date())
-        val transactionBuilder = buildTransaction()
-
+        val state = AccountState(
+                walletStateAndRef.getContractState().linearId,
+                amount,
+                Date(),
+                listOf(ourIdentity)
+        )
+        val transactionBuilder = buildTransaction(
+                AccountContract.CreateAccountCommand() to listOf(ourIdentity.owningKey)
+        )
         transactionBuilder.addOutputState(state, AccountContract.CONTRACT_ID)
-        val signInitialTransaction = signTransaction(transactionBuilder)
-
-        signInitialTransaction.verifyRequiredSignatures()
-
-        val finalisedTransaction = updateLedger(signInitialTransaction)
+        val finalisedTransaction = collectSignaturesAndUpdateLedger(transactionBuilder)
         return findState(finalisedTransaction)
     }
-
-    override fun createCommands(): List<Command<out BaseContract.MyCommand>> {
-        return listOf(
-                Command(AccountContract.CreateAccountCommand(), listOf(ourIdentity.owningKey))
-        )
-    }
-
 }
