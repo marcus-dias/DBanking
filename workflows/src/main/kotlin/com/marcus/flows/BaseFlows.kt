@@ -28,7 +28,8 @@ abstract class BaseFlow<T> : FlowLogic<T>() {
     @Suspendable
     protected fun collectSignaturesAndUpdateLedger(
             transactionBuilder: TransactionBuilder,
-            sessions: List<FlowSession> = emptyList()): SignedTransaction {
+            sessions: List<FlowSession> = emptyList()
+    ): SignedTransaction {
         val signedTransaction = collectAllSignatures(transactionBuilder, sessions)
         return updateLedger(signedTransaction, sessions)
     }
@@ -48,13 +49,14 @@ abstract class BaseFlow<T> : FlowLogic<T>() {
         if (sessions.isNotEmpty()) {
             return collectOthersSignatures(signedTransaction, sessions)
         }
+        signedTransaction.verifyRequiredSignatures()
         return signedTransaction
     }
 
     @Suspendable
     protected fun collectOthersSignatures(
             signedTransaction: SignedTransaction,
-            sessions: List<FlowSession> = emptyList()
+            sessions: List<FlowSession>
     ): SignedTransaction {
         val fullySignedTransaction = subFlow(
                 CollectSignaturesFlow(
@@ -63,13 +65,13 @@ abstract class BaseFlow<T> : FlowLogic<T>() {
                         CollectSignaturesFlow.tracker()
                 )
         )
-        fullySignedTransaction.verifyRequiredSignatures()
+        fullySignedTransaction.verifySignaturesExcept(getNotaryNode().owningKey)
         return fullySignedTransaction
     }
 
     @Suspendable
-    protected fun updateLedger(signedTransaction: SignedTransaction, sessions: List<FlowSession> = emptyList()): SignedTransaction {
-        return subFlow(FinalityFlow(signedTransaction, sessions))
+    protected fun updateLedger(signedTransaction: SignedTransaction, sessions: List<FlowSession>): SignedTransaction {
+        return subFlow(FinalityFlow(signedTransaction, sessions, FinalityFlow.tracker()))
     }
 }
 

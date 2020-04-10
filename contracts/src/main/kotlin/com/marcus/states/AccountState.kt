@@ -14,7 +14,7 @@ data class AccountState(
         val walletStateId: UniqueIdentifier,
         val amount: Amount<Currency>,
         val creationDate: Date,
-        override val participants: List<AbstractParty> = listOf(),
+        override val participants: List<AbstractParty>,
         override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState {
 
     fun copyMinus(amount: Amount<Currency>) = this.copy(amount = amount.minus(amount))
