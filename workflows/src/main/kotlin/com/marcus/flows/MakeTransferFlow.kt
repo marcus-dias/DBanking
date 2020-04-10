@@ -69,19 +69,17 @@ class MakeTransferFlow(
                 listOf(destination)
         )
         // build transaction
-        val originOwningKey = ourIdentity.owningKey
-        val destinationOwningKey = destination.owningKey
+        val originKey = ourIdentity.owningKey
+        val destinationKey = destination.owningKey
         val buildTransaction = buildTransaction(
-                TransferContract.CreateTransferCommand() to transferState.participants.map { it.owningKey },
-                AccountContract.UpdateAccountCommand() to newOriginAccountState.participants.map { it.owningKey },
-                AccountContract.UpdateAccountCommand() to newDestinationAccountState.participants.map { it.owningKey },
-                MovementContract.CreateMovementCommand() to originMovementState.participants.map { it.owningKey },
-                MovementContract.CreateMovementCommand() to destinationMovementState.participants.map { it.owningKey }
+                TransferContract.CreateTransferCommand() to listOf(originKey, destinationKey),
+                AccountContract.UpdateAccountCommand() to listOf(originKey, destinationKey),
+                MovementContract.CreateMovementCommand() to listOf(originKey, destinationKey)
         ).apply {
             // add inputs
-            addInputState(originWalletStateAndRef)
+            addReferenceState(originWalletStateAndRef.referenced())
             addInputState(originAccountStateAndRef)
-            addInputState(destinationWalletStateAndRef)
+            addReferenceState(destinationWalletStateAndRef.referenced())
             addInputState(destinationAccountStateAndRef)
             // add outputs
             addOutputState(newOriginAccountState, AccountContract.CONTRACT_ID)

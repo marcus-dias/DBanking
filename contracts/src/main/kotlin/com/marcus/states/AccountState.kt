@@ -17,8 +17,8 @@ data class AccountState(
         override val participants: List<AbstractParty>,
         override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState {
 
-    fun copyMinus(amount: Amount<Currency>) = this.copy(amount = amount.minus(amount))
-    fun copyPlus(amount: Amount<Currency>) = this.copy(amount = amount.plus(amount))
+    fun copyMinus(amount: Amount<Currency>) = this.copy(amount = this.amount.minus(amount))
+    fun copyPlus(amount: Amount<Currency>) = this.copy(amount = this.amount.plus(amount))
 }
 
 @CordaSerializable
