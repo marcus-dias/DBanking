@@ -1,15 +1,13 @@
 package com.marcus.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.marcus.Balance
 import com.marcus.contracts.AccountContract
-import com.marcus.contracts.BaseContract
 import com.marcus.states.AccountState
 import com.marcus.states.WalletState
 import com.marcus.utils.findLedgerState
 import com.marcus.utils.findState
 import com.marcus.utils.getContractState
-import net.corda.core.contracts.Amount
-import net.corda.core.contracts.Command
 import net.corda.core.flows.InitiatingFlow
 import net.corda.core.flows.StartableByRPC
 import java.math.BigDecimal
@@ -22,7 +20,7 @@ class CreateAccountFlow(private val currencyCode: String) : BaseFlow<AccountStat
     @Suspendable
     override fun call(): AccountState {
         val walletStateAndRef = findLedgerState<WalletState>()
-        val amount = Amount.fromDecimal(BigDecimal.ZERO, Currency.getInstance(currencyCode))
+        val amount = Balance.fromDecimal(BigDecimal.ZERO, Currency.getInstance(currencyCode))
         val state = AccountState(
                 walletStateAndRef.getContractState().linearId,
                 amount,

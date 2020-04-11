@@ -10,7 +10,7 @@ import net.corda.core.serialization.CordaSerializable
 import java.util.*
 
 @BelongsToContract(TransferContract::class)
-class TransferState(
+data class TransferState(
         val originAccountId: UniqueIdentifier,
         val destinationAccountId: UniqueIdentifier,
         val status: TransferStatus,

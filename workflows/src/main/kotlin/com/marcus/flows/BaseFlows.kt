@@ -49,7 +49,6 @@ abstract class BaseFlow<T> : FlowLogic<T>() {
         if (sessions.isNotEmpty()) {
             return collectOthersSignatures(signedTransaction, sessions)
         }
-        signedTransaction.verifyRequiredSignatures()
         return signedTransaction
     }
 
@@ -65,7 +64,6 @@ abstract class BaseFlow<T> : FlowLogic<T>() {
                         CollectSignaturesFlow.tracker()
                 )
         )
-        fullySignedTransaction.verifySignaturesExcept(getNotaryNode().owningKey)
         return fullySignedTransaction
     }
 

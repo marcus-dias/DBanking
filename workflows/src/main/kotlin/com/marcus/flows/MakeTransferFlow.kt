@@ -1,6 +1,7 @@
 package com.marcus.flows
 
 import co.paralleluniverse.fibers.Suspendable
+import com.marcus.Balance
 import com.marcus.contracts.AccountContract
 import com.marcus.contracts.MovementContract
 import com.marcus.contracts.TransferContract
@@ -29,7 +30,7 @@ class MakeTransferFlow(
     override fun call(): TransferState {
         // inputs
         val originWalletStateAndRef = findLedgerState<WalletState>()
-        val originAccountStateAndRef = findLedgerState<AccountState>()
+        val originAccountStateAndRef = findAccountForCurrency(amount.token)
 
         val counterPartySessionFlow = initiateFlow(destination)
         counterPartySessionFlow.send(amount.token)
@@ -41,8 +42,8 @@ class MakeTransferFlow(
         val destinationAccountState = destinationAccountStateAndRef.getContractState()
 
         // outputs
-        val newOriginAccountState = originAccountState.copyMinus(amount)
-        val newDestinationAccountState = destinationAccountState.copyPlus(amount)
+        val newOriginAccountState = originAccountState.copyMinus(Balance.fromAmount(amount))
+        val newDestinationAccountState = destinationAccountState.copyPlus(Balance.fromAmount(amount))
         val transferState = TransferState(
                 originAccountState.linearId,
                 destinationAccountState.linearId,
