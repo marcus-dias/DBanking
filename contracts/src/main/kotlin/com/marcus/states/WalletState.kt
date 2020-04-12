@@ -9,14 +9,21 @@ import net.corda.core.identity.Party
 import net.corda.core.serialization.CordaSerializable
 import java.util.*
 
+/**
+ * Wallet state used to represent holder of all accounts a owner party has on the network
+ */
 @BelongsToContract(WalletContract::class)
 data class WalletState(
         val owner: Party,
         val status: WalletStatus,
         val creationDate: Date,
         override val participants: List<AbstractParty> = listOf(owner),
-        override val linearId: UniqueIdentifier = UniqueIdentifier()) : LinearState
+        override val linearId: UniqueIdentifier = UniqueIdentifier()
+) : LinearState
 
+/**
+ * Wallet status possible values
+ */
 @CordaSerializable
 enum class WalletStatus {
     ACTIVE,

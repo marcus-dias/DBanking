@@ -9,6 +9,9 @@ import net.corda.core.identity.AbstractParty
 import net.corda.core.serialization.CordaSerializable
 import java.util.*
 
+/**
+ * Transfer State used to represent a transfer of a certain amount between two accounts
+ */
 @BelongsToContract(TransferContract::class)
 data class TransferState(
         val originAccountId: UniqueIdentifier,
@@ -21,6 +24,9 @@ data class TransferState(
         override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : LinearState
 
+/**
+ * Transfer status possible values
+ */
 @CordaSerializable
 enum class TransferStatus {
     SUCCESS,
