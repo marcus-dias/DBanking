@@ -7,7 +7,7 @@ import com.marcus.contracts.MovementContract
 import com.marcus.contracts.TransferContract
 import com.marcus.states.*
 import com.marcus.utils.findAccountForCurrency
-import com.marcus.utils.findLedgerState
+import com.marcus.utils.findMyWallet
 import com.marcus.utils.findState
 import com.marcus.utils.getContractState
 import net.corda.core.contracts.Amount
@@ -29,7 +29,7 @@ class MakeTransferFlow(
     @Suspendable
     override fun call(): TransferState {
         // inputs
-        val originWalletStateAndRef = findLedgerState<WalletState>()
+        val originWalletStateAndRef = findMyWallet()
         val originAccountStateAndRef = findAccountForCurrency(amount.token)
 
         val counterPartySessionFlow = initiateFlow(destination)
@@ -100,7 +100,7 @@ class MakeTransferFlowResponder(private val launcherSession: FlowSession) : Flow
     @Suspendable
     override fun call(): WireTransaction {
         val currency = launcherSession.receive<Currency>().unwrap { it }
-        val walletStateAndRef = findLedgerState<WalletState>()
+        val walletStateAndRef = findMyWallet()
         val accountStateAndRef = findAccountForCurrency(currency)
         subFlow(SendStateAndRefFlow(launcherSession, listOf(walletStateAndRef)))
         subFlow(SendStateAndRefFlow(launcherSession, listOf(accountStateAndRef)))
