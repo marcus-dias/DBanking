@@ -18,4 +18,26 @@ class TransferContract : BaseContract() {
 
         }
     }
+
+    class RequestTransferCommand : MyCommand() {
+
+        override fun verifyContractSpecifics(tx: LedgerTransaction) {
+
+        }
+
+        override fun verifyContractShape(tx: LedgerTransaction) {
+
+        }
+    }
+
+    class ExecuteRequestedTransferCommand : MyCommand() {
+
+        override fun verifyContractSpecifics(tx: LedgerTransaction) {
+
+        }
+
+        override fun verifyContractShape(tx: LedgerTransaction) {
+
+        }
+    }
 }

@@ -7,10 +7,9 @@ import com.marcus.contracts.MovementContract
 import com.marcus.contracts.TransferContract
 import com.marcus.states.*
 import com.marcus.utils.*
-import net.corda.core.contracts.Amount
+import net.corda.core.contracts.UniqueIdentifier
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
-import net.corda.core.identity.Party
 import net.corda.core.transactions.SignedTransaction
 import net.corda.core.transactions.WireTransaction
 import net.corda.core.utilities.unwrap
@@ -18,22 +17,26 @@ import java.util.*
 
 @InitiatingFlow
 @StartableByRPC
-class MakeTransferFlow(
-        private val destination: Party,
-        private val amount: Amount<Currency>
+class ExecuteRequestedTransferFlow(
+        private val linearId: UniqueIdentifier
 ) : BaseFlow<TransferState>() {
 
     @Suspendable
     override fun call(): TransferState {
         // inputs
+        val transferStateAndRef = findLedgerStateById<TransferState>(linearId)
+        val transferState = transferStateAndRef.getContractState()
+        val amount = transferState.amount
+
         val originWalletStateAndRef = findMyWallet()
         originWalletStateAndRef.requireIsActive()
 
-        val originAccountStateAndRef = findAccountForCurrency(amount.token)
+        val originAccountStateAndRef = findLedgerStateById<AccountState>(transferState.originAccountId)
 
+        val destination = findPartyByPublicKey((transferState.participants - ourIdentity).single().owningKey)
         val counterPartySessionFlow = initiateFlow(destination)
-        counterPartySessionFlow.send(amount.token)
 
+        counterPartySessionFlow.send(amount.token)
         val destinationWalletStateAndRef = subFlow(ReceiveStateAndRefFlow<WalletState>(counterPartySessionFlow)).single()
         destinationWalletStateAndRef.requireIsActive()
 
@@ -45,15 +48,7 @@ class MakeTransferFlow(
         // outputs
         val newOriginAccountState = originAccountState.copyMinus(Balance.fromAmount(amount))
         val newDestinationAccountState = destinationAccountState.copyPlus(Balance.fromAmount(amount))
-        val transferState = TransferState(
-                originAccountState.linearId,
-                destinationAccountState.linearId,
-                TransferStatus.SUCCESS,
-                Date(),
-                Date(),
-                amount,
-                listOf(ourIdentity, destination)
-        )
+        val newTransferState = transferState.copy(executionDate = Date(), status = TransferStatus.SUCCESS)
         val originMovementState = MovementState(
                 originAccountState.linearId,
                 destinationAccountState.linearId,
@@ -74,17 +69,18 @@ class MakeTransferFlow(
         val originKey = ourIdentity.owningKey
         val destinationKey = destination.owningKey
         val buildTransaction = buildTransaction(
-                TransferContract.CreateTransferCommand() to listOf(originKey, destinationKey),
+                TransferContract.ExecuteRequestedTransferCommand() to listOf(originKey, destinationKey),
                 AccountContract.UpdateAccountCommand() to listOf(originKey, destinationKey),
                 MovementContract.CreateMovementCommand() to listOf(originKey, destinationKey)
         ).apply {
             // add inputs
             addInputState(originAccountStateAndRef)
             addInputState(destinationAccountStateAndRef)
+            addInputState(transferStateAndRef)
             // add outputs
             addOutputState(newOriginAccountState, AccountContract.CONTRACT_ID)
             addOutputState(newDestinationAccountState, AccountContract.CONTRACT_ID)
-            addOutputState(transferState, TransferContract.CONTRACT_ID)
+            addOutputState(newTransferState, TransferContract.CONTRACT_ID)
             addOutputState(originMovementState, MovementContract.CONTRACT_ID)
             addOutputState(destinationMovementState, MovementContract.CONTRACT_ID)
         }
@@ -94,8 +90,8 @@ class MakeTransferFlow(
     }
 }
 
-@InitiatedBy(MakeTransferFlow::class)
-class MakeTransferFlowResponder(private val launcherSession: FlowSession) : FlowLogic<WireTransaction>() {
+@InitiatedBy(ExecuteRequestedTransferFlow::class)
+class ExecuteRequestedTransferFlowResponder(private val launcherSession: FlowSession) : FlowLogic<WireTransaction>() {
     @Suspendable
     override fun call(): WireTransaction {
         val currency = launcherSession.receive<Currency>().unwrap { it }
@@ -106,9 +102,6 @@ class MakeTransferFlowResponder(private val launcherSession: FlowSession) : Flow
 
         val signTransactionFlow: SignTransactionFlow = object : SignTransactionFlow(launcherSession) {
             override fun checkTransaction(stx: SignedTransaction) = requireThat {
-//                Ensuring that the transaction received is the expected type, i.e. has the expected type of inputs and outputs
-//                Checking that the properties of the outputs are expected, this is in the absence of integrating reference data sources to facilitate this
-//                Checking that the transaction is not incorrectly spending (perhaps maliciously) asset states, as potentially the transaction creator has access to some of signer’s state references
             }
         }
         val signedTransaction = subFlow(signTransactionFlow).id

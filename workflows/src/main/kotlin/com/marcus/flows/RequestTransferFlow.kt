@@ -6,10 +6,7 @@ import com.marcus.states.AccountState
 import com.marcus.states.TransferState
 import com.marcus.states.TransferStatus
 import com.marcus.states.WalletState
-import com.marcus.utils.findAccountForCurrency
-import com.marcus.utils.findMyWallet
-import com.marcus.utils.findState
-import com.marcus.utils.getContractState
+import com.marcus.utils.*
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
@@ -30,12 +27,16 @@ class RequestTransferFlow(
     override fun call(): TransferState {
         // inputs
         val destinationWalletStateAndRef = findMyWallet()
+        destinationWalletStateAndRef.requireIsActive()
+
         val destinationAccountStateAndRef = findAccountForCurrency(amount.token)
 
         val counterPartySessionFlow = initiateFlow(origin)
         counterPartySessionFlow.send(amount.token)
 
         val originWalletStateAndRef = subFlow(ReceiveStateAndRefFlow<WalletState>(counterPartySessionFlow)).single()
+        originWalletStateAndRef.requireIsActive()
+
         val originAccountStateAndRef = subFlow(ReceiveStateAndRefFlow<AccountState>(counterPartySessionFlow)).single()
 
         val originAccountState = originAccountStateAndRef.getContractState()
@@ -55,13 +56,8 @@ class RequestTransferFlow(
         val originKey = origin.owningKey
         val destinationKey = ourIdentity.owningKey
         val buildTransaction = buildTransaction(
-                TransferContract.CreateTransferCommand() to listOf(originKey, destinationKey)
+                TransferContract.RequestTransferCommand() to listOf(originKey, destinationKey)
         ).apply {
-            // add inputs
-            addReferenceState(originWalletStateAndRef.referenced())
-            addReferenceState(destinationWalletStateAndRef.referenced())
-            addInputState(originAccountStateAndRef)
-            addInputState(destinationAccountStateAndRef)
             // add outputs
             addOutputState(transferState, TransferContract.CONTRACT_ID)
         }
