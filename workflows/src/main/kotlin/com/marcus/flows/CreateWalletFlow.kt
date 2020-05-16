@@ -5,6 +5,7 @@ import com.marcus.Balance
 import com.marcus.contracts.AccountContract
 import com.marcus.contracts.WalletContract
 import com.marcus.states.AccountState
+import com.marcus.states.AccountStatus
 import com.marcus.states.WalletState
 import com.marcus.states.WalletStatus
 import com.marcus.utils.findState
@@ -26,12 +27,13 @@ class CreateWalletFlow(
                     state.linearId,
                     Balance.zero(it),
                     Date(),
+                    AccountStatus.ACTIVE,
                     listOf(ourIdentity)
             )
         }
         val transactionBuilder = buildTransaction(
                 WalletContract.CreateWalletCommand() to listOf(ourIdentity.owningKey),
-                AccountContract.CreateAccountCommand() to listOf(ourIdentity.owningKey)
+                AccountContract.CreateAccountWithWalletCommand() to listOf(ourIdentity.owningKey)
         ).apply {
             addOutputState(state, WalletContract.CONTRACT_ID)
             accountStates.forEach {

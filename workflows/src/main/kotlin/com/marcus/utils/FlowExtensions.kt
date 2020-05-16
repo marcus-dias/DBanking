@@ -61,6 +61,11 @@ inline fun FlowLogic<*>.findAccountForCurrency(currency: Currency): StateAndRef<
 }
 
 @Suspendable
+inline fun FlowLogic<*>.findAccountForCurrencyOrNull(currency: Currency): StateAndRef<AccountState>? {
+    return findLedgerStates<AccountState>().singleOrNull { it.getContractState().amount.token == currency }
+}
+
+@Suspendable
 inline fun <reified S : ContractState> StateAndRef<S>.getContractState(): S = state.data
 
 @Suspendable

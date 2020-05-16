@@ -17,6 +17,7 @@ data class AccountState(
         val walletStateId: UniqueIdentifier,
         val amount: Balance<Currency>,
         val creationDate: Date,
+        val state: AccountStatus,
         override val participants: List<AbstractParty>,
         override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : LinearState {

@@ -23,10 +23,7 @@ abstract class BaseContract : Contract {
 
     // Used to indicate the transaction's intent.
     abstract class MyCommand : CommandData {
-        fun verifySignatures(tx: LedgerTransaction, signers: List<PublicKey>) {
-
-        }
-
+        open fun verifySignatures(tx: LedgerTransaction, signers: List<PublicKey>) {}
         abstract fun verifyContractSpecifics(tx: LedgerTransaction)
         abstract fun verifyContractShape(tx: LedgerTransaction)
     }

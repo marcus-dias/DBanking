@@ -1,6 +1,5 @@
 package com.marcus
 
-import com.marcus.flows.Responder
 import net.corda.testing.node.MockNetwork
 import net.corda.testing.node.MockNetworkParameters
 import net.corda.testing.node.TestCordapp
@@ -10,16 +9,13 @@ import org.junit.Test
 
 class FlowTests {
     private val network = MockNetwork(MockNetworkParameters(cordappsForAllNodes = listOf(
-        TestCordapp.findCordapp("com.template.contracts"),
-        TestCordapp.findCordapp("com.template.flows")
+            TestCordapp.findCordapp("com.template.contracts"),
+            TestCordapp.findCordapp("com.template.flows")
     )))
     private val a = network.createNode()
     private val b = network.createNode()
 
     init {
-        listOf(a, b).forEach {
-            it.registerInitiatedFlow(Responder::class.java)
-        }
     }
 
     @Before
