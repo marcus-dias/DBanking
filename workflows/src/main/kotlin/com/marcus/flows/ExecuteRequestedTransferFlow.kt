@@ -1,7 +1,6 @@
 package com.marcus.flows
 
 import co.paralleluniverse.fibers.Suspendable
-import com.marcus.Balance
 import com.marcus.contracts.AccountContract
 import com.marcus.contracts.MovementContract
 import com.marcus.contracts.TransferContract
@@ -46,8 +45,8 @@ class ExecuteRequestedTransferFlow(
         val destinationAccountState = destinationAccountStateAndRef.getContractState()
 
         // outputs
-        val newOriginAccountState = originAccountState.copyMinus(Balance.fromAmount(amount))
-        val newDestinationAccountState = destinationAccountState.copyPlus(Balance.fromAmount(amount))
+        val newOriginAccountState = originAccountState.copyMinus(amount)
+        val newDestinationAccountState = destinationAccountState.copyPlus(amount)
         val newTransferState = transferState.copy(executionDate = Date(), status = TransferStatus.SUCCESS)
         val originMovementState = MovementState(
                 originAccountState.linearId,
@@ -70,7 +69,7 @@ class ExecuteRequestedTransferFlow(
         val destinationKey = destination.owningKey
         val buildTransaction = buildTransaction(
                 TransferContract.ExecuteRequestedTransferCommand() to listOf(originKey, destinationKey),
-                AccountContract.UpdateAccountCommand() to listOf(originKey, destinationKey),
+                AccountContract.TransferAccountsBalancesCommand() to listOf(originKey, destinationKey),
                 MovementContract.CreateMovementCommand() to listOf(originKey, destinationKey)
         ).apply {
             // add inputs

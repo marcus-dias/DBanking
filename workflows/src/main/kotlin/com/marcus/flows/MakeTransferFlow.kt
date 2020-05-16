@@ -7,7 +7,6 @@ import com.marcus.contracts.MovementContract
 import com.marcus.contracts.TransferContract
 import com.marcus.states.*
 import com.marcus.utils.*
-import net.corda.core.contracts.Amount
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
@@ -20,7 +19,7 @@ import java.util.*
 @StartableByRPC
 class MakeTransferFlow(
         private val destination: Party,
-        private val amount: Amount<Currency>
+        private val amount: Balance<Currency>
 ) : BaseFlow<TransferState>() {
 
     @Suspendable
@@ -43,8 +42,8 @@ class MakeTransferFlow(
         val destinationAccountState = destinationAccountStateAndRef.getContractState()
 
         // outputs
-        val newOriginAccountState = originAccountState.copyMinus(Balance.fromAmount(amount))
-        val newDestinationAccountState = destinationAccountState.copyPlus(Balance.fromAmount(amount))
+        val newOriginAccountState = originAccountState.copyMinus(amount)
+        val newDestinationAccountState = destinationAccountState.copyPlus(amount)
         val transferState = TransferState(
                 originAccountState.linearId,
                 destinationAccountState.linearId,
@@ -75,7 +74,7 @@ class MakeTransferFlow(
         val destinationKey = destination.owningKey
         val buildTransaction = buildTransaction(
                 TransferContract.CreateTransferCommand() to listOf(originKey, destinationKey),
-                AccountContract.UpdateAccountCommand() to listOf(originKey, destinationKey),
+                AccountContract.TransferAccountsBalancesCommand() to listOf(originKey, destinationKey),
                 MovementContract.CreateMovementCommand() to listOf(originKey, destinationKey)
         ).apply {
             // add inputs

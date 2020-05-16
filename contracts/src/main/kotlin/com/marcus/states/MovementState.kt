@@ -1,7 +1,7 @@
 package com.marcus.states
 
+import com.marcus.Balance
 import com.marcus.contracts.MovementContract
-import net.corda.core.contracts.Amount
 import net.corda.core.contracts.BelongsToContract
 import net.corda.core.contracts.ContractState
 import net.corda.core.contracts.UniqueIdentifier
@@ -20,7 +20,7 @@ import java.util.*
 data class MovementState(
         val myAccountId: UniqueIdentifier,
         val counterAccountId: UniqueIdentifier,
-        val amount: Amount<Currency>,
+        val amount: Balance<Currency>,
         val executionDate: Date,
         val status: MovementType,
         override val participants: List<AbstractParty>

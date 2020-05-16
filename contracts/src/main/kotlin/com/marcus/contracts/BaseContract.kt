@@ -13,6 +13,7 @@ abstract class BaseContract : Contract {
     // does not throw an exception.
     override fun verify(tx: LedgerTransaction) {
         // Verification logic goes here.
+        require(tx.notary != null) { "There must be a notary." }
         tx.commands.forEach {
             (it.value as MyCommand).apply {
                 verifyContractShape(tx)

@@ -1,5 +1,6 @@
 package com.marcus.states
 
+import com.marcus.Balance
 import com.marcus.contracts.TransferContract
 import net.corda.core.contracts.Amount
 import net.corda.core.contracts.BelongsToContract
@@ -19,7 +20,7 @@ data class TransferState(
         val status: TransferStatus,
         val creationDate: Date,
         val executionDate: Date?,
-        val amount: Amount<Currency>,
+        val amount: Balance<Currency>,
         override val participants: List<AbstractParty>,
         override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : LinearState

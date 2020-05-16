@@ -30,7 +30,6 @@ class WalletContract : BaseContract() {
         }
 
         override fun verifyContractShape(tx: LedgerTransaction) {
-            require(tx.notary != null) { "There must be a notary." }
             require(tx.inputStates.isEmpty()) { "Input states must be empty." }
             val outputStates = tx.outputStates
             require(outputStates.isNotEmpty()) { "Output states must not be empty." }
