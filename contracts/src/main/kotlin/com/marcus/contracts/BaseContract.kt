@@ -14,10 +14,11 @@ abstract class BaseContract : Contract {
     override fun verify(tx: LedgerTransaction) {
         // Verification logic goes here.
         tx.commands.forEach {
-            val myCommand = it.value as MyCommand
-            myCommand.verifyContractShape(tx)
-            myCommand.verifyContractSpecifics(tx)
-            myCommand.verifySignatures(tx, it.signers)
+            (it.value as MyCommand).apply {
+                verifyContractShape(tx)
+                verifyContractSpecifics(tx)
+                verifySignatures(tx, it.signers)
+            }
         }
     }
 
