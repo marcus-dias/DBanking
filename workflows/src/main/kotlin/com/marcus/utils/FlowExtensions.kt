@@ -57,12 +57,12 @@ inline fun FlowLogic<*>.findMyWallet(): StateAndRef<WalletState> {
 
 @Suspendable
 inline fun FlowLogic<*>.findAccountForCurrency(currency: Currency): StateAndRef<AccountState> {
-    return findLedgerStates<AccountState>().single { it.getContractState().amount.token == currency }
+    return findLedgerStates<AccountState>().single { it.getContractState().balance.token == currency }
 }
 
 @Suspendable
 inline fun FlowLogic<*>.findAccountForCurrencyOrNull(currency: Currency): StateAndRef<AccountState>? {
-    return findLedgerStates<AccountState>().singleOrNull { it.getContractState().amount.token == currency }
+    return findLedgerStates<AccountState>().singleOrNull { it.getContractState().balance.token == currency }
 }
 
 @Suspendable

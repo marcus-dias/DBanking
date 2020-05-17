@@ -17,7 +17,7 @@ class AccountContract : BaseContract() {
 
         override fun verifyContractSpecifics(tx: LedgerTransaction) {
             val accountState = tx.outputStates.filterIsInstance<AccountState>().single()
-            require(accountState.amount.quantity == 0L) { "AccountState initial balance must be 0." }
+            require(accountState.balance.quantity == 0L) { "AccountState initial balance must be 0." }
             require(accountState.state == AccountStatus.ACTIVE) { "AccountState must be active." }
         }
 
@@ -39,7 +39,7 @@ class AccountContract : BaseContract() {
 
         override fun verifyContractSpecifics(tx: LedgerTransaction) {
             tx.inputStates.filterIsInstance<AccountState>().forEach {
-                require(it.amount.quantity == 0L) { "AccountState initial balance must be 0." }
+                require(it.balance.quantity == 0L) { "AccountState initial balance must be 0." }
                 require(it.state == AccountStatus.ACTIVE) { "AccountState must be active." }
             }
         }
@@ -65,10 +65,10 @@ class AccountContract : BaseContract() {
                 val output = outputAccountStates.find { it.linearId == input.linearId }!!
                 require(input.state == AccountStatus.ACTIVE) { "Balance can only be updated on active accounts." }
                 require(output.state == AccountStatus.ACTIVE) { "Balance can only be updated on active accounts." }
-                require(input.amount.token == output.amount.token) { "Account currency cannot change." }
+                require(input.balance.token == output.balance.token) { "Account currency cannot change." }
                 require(input.walletStateId == output.walletStateId) { "Account associated wallet cannot change." }
                 require(input.creationDate == output.creationDate) { "Account creation date cannot change." }
-                require((output.amount - input.amount + amountTransacted) == Balance.zero(amountTransacted.token))
+                require((output.balance - input.balance + Balance.fromAmount(amountTransacted)) == Balance.zero(amountTransacted.token))
             }
         }
 

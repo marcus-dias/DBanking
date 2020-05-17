@@ -20,7 +20,7 @@ data class TransferState(
         val status: TransferStatus,
         val creationDate: Date,
         val executionDate: Date?,
-        val amount: Balance<Currency>,
+        val amount: Amount<Currency>,
         override val participants: List<AbstractParty>,
         override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : LinearState

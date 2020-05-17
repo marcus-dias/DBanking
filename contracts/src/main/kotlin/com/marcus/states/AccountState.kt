@@ -15,14 +15,14 @@ import java.util.*
 @BelongsToContract(AccountContract::class)
 data class AccountState(
         val walletStateId: UniqueIdentifier,
-        val amount: Balance<Currency>,
+        val balance: Balance<Currency>,
         val creationDate: Date,
         val state: AccountStatus,
         override val participants: List<AbstractParty>,
         override val linearId: UniqueIdentifier = UniqueIdentifier()
 ) : LinearState {
-    fun copyMinus(amount: Balance<Currency>) = this.copy(amount = this.amount.minus(amount))
-    fun copyPlus(amount: Balance<Currency>) = this.copy(amount = this.amount.plus(amount))
+    fun copyMinus(amount: Balance<Currency>) = this.copy(balance = this.balance.minus(amount))
+    fun copyPlus(amount: Balance<Currency>) = this.copy(balance = this.balance.plus(amount))
 }
 
 /**

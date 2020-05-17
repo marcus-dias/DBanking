@@ -7,6 +7,7 @@ import com.marcus.contracts.MovementContract
 import com.marcus.contracts.TransferContract
 import com.marcus.states.*
 import com.marcus.utils.*
+import net.corda.core.contracts.Amount
 import net.corda.core.contracts.requireThat
 import net.corda.core.flows.*
 import net.corda.core.identity.Party
@@ -19,7 +20,7 @@ import java.util.*
 @StartableByRPC
 class MakeTransferFlow(
         private val destination: Party,
-        private val amount: Balance<Currency>
+        private val amount: Amount<Currency>
 ) : BaseFlow<TransferState>() {
 
     @Suspendable
@@ -42,8 +43,9 @@ class MakeTransferFlow(
         val destinationAccountState = destinationAccountStateAndRef.getContractState()
 
         // outputs
-        val newOriginAccountState = originAccountState.copyMinus(amount)
-        val newDestinationAccountState = destinationAccountState.copyPlus(amount)
+        val balance = Balance.fromAmount(amount)
+        val newOriginAccountState = originAccountState.copyMinus(balance)
+        val newDestinationAccountState = destinationAccountState.copyPlus(balance)
         val transferState = TransferState(
                 originAccountState.linearId,
                 destinationAccountState.linearId,
@@ -54,6 +56,7 @@ class MakeTransferFlow(
                 listOf(ourIdentity, destination)
         )
         val originMovementState = MovementState(
+                transferState.linearId,
                 originAccountState.linearId,
                 destinationAccountState.linearId,
                 amount,
@@ -62,6 +65,7 @@ class MakeTransferFlow(
                 listOf(ourIdentity)
         )
         val destinationMovementState = MovementState(
+                transferState.linearId,
                 destinationAccountState.linearId,
                 originAccountState.linearId,
                 amount,
@@ -73,7 +77,7 @@ class MakeTransferFlow(
         val originKey = ourIdentity.owningKey
         val destinationKey = destination.owningKey
         val buildTransaction = buildTransaction(
-                TransferContract.CreateTransferCommand() to listOf(originKey, destinationKey),
+                TransferContract.MakeTransferCommand() to listOf(originKey, destinationKey),
                 AccountContract.TransferAccountsBalancesCommand() to listOf(originKey, destinationKey),
                 MovementContract.CreateMovementCommand() to listOf(originKey, destinationKey)
         ).apply {
