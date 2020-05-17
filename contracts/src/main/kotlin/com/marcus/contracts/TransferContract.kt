@@ -114,8 +114,8 @@ class TransferContract : BaseContract() {
             val outputTransferState = tx.outputStates.filterIsInstance<TransferState>().single()
             val outputMovementStates = tx.outputStates.filterIsInstance<MovementState>()
 
-            require(outputTransferState.creationDate == outputTransferState.executionDate) {
-                "Make transfer should be executed as soon as it is created."
+            require(outputTransferState.creationDate != outputTransferState.executionDate) {
+                "Execute transfer should be executed as soon as it is created."
             }
             require(outputTransferState.amount > Amount.zero(outputTransferState.amount.token)) {
                 "Transfer amount must be positive."

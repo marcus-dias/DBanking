@@ -75,7 +75,7 @@ class AccountContract : BaseContract() {
         override fun verifyContractShape(tx: LedgerTransaction) {
             require(tx.inputStates.isNotEmpty()) { "InputStates must not be empty." }
             require(tx.outputStates.isNotEmpty()) { "OutputStates must not be empty." }
-            require(tx.inputStates.filterIsInstance<TransferState>().size == 1) {
+            require(tx.outputStates.filterIsInstance<TransferState>().size == 1) {
                 "Account balance updates must be associated with a TransferState."
             }
             val inputAccountStates = tx.inputStates.filterIsInstance<AccountState>()
