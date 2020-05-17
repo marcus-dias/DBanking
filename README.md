@@ -8,3 +8,5 @@ Have no broker between banks.
 Low latency on transfers.
 # What is the solution
 Create a network of banks that allow to transfer digital assets between nodes using Corda R3.
+
+[Learn more on my articles about Corda R3](https://www.codingthreads.com/articles/categories/corda-r3)
