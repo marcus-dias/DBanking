@@ -1,11 +1,11 @@
 package com.marcus.contracts
 
-import com.marcus.Balance
 import com.marcus.states.AccountState
 import com.marcus.states.AccountStatus
 import com.marcus.states.TransferState
 import net.corda.core.transactions.LedgerTransaction
 import java.security.PublicKey
+import kotlin.math.abs
 
 class AccountContract : BaseContract() {
     companion object {
@@ -68,7 +68,10 @@ class AccountContract : BaseContract() {
                 require(input.balance.token == output.balance.token) { "Account currency cannot change." }
                 require(input.walletStateId == output.walletStateId) { "Account associated wallet cannot change." }
                 require(input.creationDate == output.creationDate) { "Account creation date cannot change." }
-                require((output.balance - input.balance + Balance.fromAmount(amountTransacted)) == Balance.zero(amountTransacted.token))
+
+                require(abs(output.balance.quantity - input.balance.quantity) - amountTransacted.quantity == 0L) {
+                    "The difference from initial balance and final balance should be the amount transacted."
+                }
             }
         }
 

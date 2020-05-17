@@ -46,12 +46,13 @@ class MakeTransferFlow(
         val balance = Balance.fromAmount(amount)
         val newOriginAccountState = originAccountState.copyMinus(balance)
         val newDestinationAccountState = destinationAccountState.copyPlus(balance)
+        val transferDate = Date()
         val transferState = TransferState(
                 originAccountState.linearId,
                 destinationAccountState.linearId,
                 TransferStatus.SUCCESS,
-                Date(),
-                Date(),
+                transferDate,
+                transferDate,
                 amount,
                 listOf(ourIdentity, destination)
         )
@@ -60,7 +61,7 @@ class MakeTransferFlow(
                 originAccountState.linearId,
                 destinationAccountState.linearId,
                 amount,
-                Date(),
+                transferDate,
                 MovementType.DEBIT,
                 listOf(ourIdentity)
         )
@@ -69,7 +70,7 @@ class MakeTransferFlow(
                 destinationAccountState.linearId,
                 originAccountState.linearId,
                 amount,
-                Date(),
+                transferDate,
                 MovementType.CREDIT,
                 listOf(destination)
         )

@@ -49,13 +49,14 @@ class ExecuteRequestedTransferFlow(
         val balance = Balance.fromAmount(amount)
         val newOriginAccountState = originAccountState.copyMinus(balance)
         val newDestinationAccountState = destinationAccountState.copyPlus(balance)
-        val newTransferState = transferState.copy(executionDate = Date(), status = TransferStatus.SUCCESS)
+        val transferDate = Date()
+        val newTransferState = transferState.copy(executionDate = transferDate, status = TransferStatus.SUCCESS)
         val originMovementState = MovementState(
                 newTransferState.linearId,
                 originAccountState.linearId,
                 destinationAccountState.linearId,
                 amount,
-                Date(),
+                transferDate,
                 MovementType.DEBIT,
                 listOf(ourIdentity)
         )
@@ -64,7 +65,7 @@ class ExecuteRequestedTransferFlow(
                 destinationAccountState.linearId,
                 originAccountState.linearId,
                 amount,
-                Date(),
+                transferDate,
                 MovementType.CREDIT,
                 listOf(destination)
         )
