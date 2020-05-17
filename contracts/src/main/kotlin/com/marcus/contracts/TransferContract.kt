@@ -39,6 +39,12 @@ class TransferContract : BaseContract() {
             val destinationMovement = outputMovementStates.find { it.myAccountId == outputTransferState.destinationAccountId }!!
 
             val transferredBalance = Balance.fromAmount(outputTransferState.amount)
+            require(inputOriginAccount.linearId != inputDestinationAccount.linearId) {
+                "Origin and destination account should not be the same."
+            }
+            require(outputOriginAccount.linearId != outputDestinationAccount.linearId) {
+                "Origin and destination account should not be the same."
+            }
             require(inputOriginAccount.balance - outputOriginAccount.balance == transferredBalance) {
                 "Origin balance difference should be equals the the amount transferred."
             }
@@ -146,6 +152,12 @@ class TransferContract : BaseContract() {
             val destinationMovement = outputMovementStates.find { it.myAccountId == outputTransferState.destinationAccountId }!!
 
             val transferredBalance = Balance.fromAmount(outputTransferState.amount)
+            require(inputOriginAccount.linearId != inputDestinationAccount.linearId) {
+                "Origin and destination account should not be the same."
+            }
+            require(outputOriginAccount.linearId != outputDestinationAccount.linearId) {
+                "Origin and destination account should not be the same."
+            }
             require(inputOriginAccount.balance - outputOriginAccount.balance == transferredBalance) {
                 "Origin balance difference should be equals the the amount transferred."
             }
